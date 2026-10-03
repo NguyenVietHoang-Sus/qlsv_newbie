@@ -24,7 +24,7 @@
 				$stt = 1;
 				while($row = $result->fetch_assoc()){
 					echo "<tr>";
-					echo "<td>" . $stt . "</td>";
+					echo "<td>" . $stt++ . "</td>";
 					echo "<td>" . $row["ma_khoa"] . "</td>";
 					echo "<td>" . $row["ma_lop"] . "</td>";
 					echo "<td>" . $row["ten_lop"] . "</td>";
