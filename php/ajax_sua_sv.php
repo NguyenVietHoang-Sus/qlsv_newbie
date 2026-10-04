@@ -12,10 +12,10 @@
 	$email = $_POST['email'] ?? '';
 	$sdt = $_POST['sdt'] ?? '';
 
-	$sql = "INSERT INTO t_sinhvien (ma_khoa, ma_lop, ma_sv, ho_ten, gioi_tinh, ngay_sinh, dia_chi, email, sdt) VALUES ('$ma_khoa', '$ma_lop', '$ma_sv', '$ho_ten', '$gioi_tinh', '$ngay_sinh', '$dia_chi', '$email', '$sdt')";
+	$sql = "UPDATE t_sinhvien SET ma_khoa = '$ma_khoa', ma_lop = '$ma_lop', ma_sv = '$ma_sv', ho_ten = '$ho_ten', gioi_tinh = '$gioi_tinh', ngay_sinh = '$ngay_sinh', dia_chi = '$dia_chi', email = '$email', sdt = '$sdt' WHERE ma_sv = '$ma_sv'";
 
 	if($conn->query($sql) === TRUE){
-		echo json_encode(['status' => 'success', 'message' => 'Thêm sinh viên thành công!']);
+		echo json_encode(['status' => 'success', 'message' => 'Cập nhật sinh viên thành công!']);
 	}
 	else{
 		echo json_encode(['status' => 'error', 'message' => $conn->error]);

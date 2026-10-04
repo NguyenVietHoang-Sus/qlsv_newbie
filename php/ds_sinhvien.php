@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Danh sách sinh viên</title>
+	<link rel="stylesheet" href="../css/modal.css">
 </head>
 <body>
 	<?php
@@ -15,6 +16,7 @@
 		<h2>Danh sách sinh viên</h2>
 		<button onclick="openAddModal()">Thêm sinh viên mới</button>
 		<table border="1">
+			<th colspan="1">Hành động</th>
 			<th>STT</th>
 			<th>Mã khoa</th>
 			<th>Mã lớp</th>
@@ -25,7 +27,6 @@
 			<th>Địa chỉ</th>
 			<th>Email</th>
 			<th>Số điện thoại</th>
-			<th>Hành động</th>
 		<?php 
 			if($result->num_rows > 0){
 				$stt = 1;
@@ -63,10 +64,23 @@
 				<input type="hidden" id="action_type" name="action_type" value="add">
 
 				<label for="ma_khoa">Mã khoa:</label>
-				<input type="text" id="ma_khoa" name="ma_khoa" required><br><br>
+				<select id="ma_khoa" name="ma_khoa" required>
+					<option value="CNTT">Công nghệ thông tin</option>
+					<option value="KT">Kinh tế</option>
+					<option value="NN">Ngoại ngữ</option>
+					<option value="MT">Môi trường</option>
+				</select><br><br>
 
 				<label for="ma_lop">Mã lớp:</label>
-				<input type="text" id="ma_lop" name="ma_lop" required><br><br>
+				<select id="ma_lop" name="ma_lop" required>
+					<option value="C1">C1</option>
+					<option value="C2">C2</option>
+					<option value="C3">C3</option>
+					<option value="KT1">KT1</option>
+					<option value="KT2">KT2</option>
+					<option value="NN1">NN1</option>
+					<option value="MT1">MT1</option>
+				</select><br><br>
 
 				<label for="ma_sv">Mã sinh viên:</label>
 				<input type="text" id="ma_sv" name="ma_sv" required><br><br>
@@ -76,13 +90,13 @@
 
 				<label for="gioi_tinh">Giới tính:</label>
 				<select id="gioi_tinh" name="gioi_tinh">
-					<option value="Nam"></option>
-					<option value="Nữ"></option>
-					<option value="Khác"></option>
+					<option value="Nam">Nam</option>
+					<option value="Nữ">Nữ</option>
+					<option value="Khác">Khác</option>
 				</select><br><br>
 
 				<label for="ngay_sinh">Ngày sinh:</label>
-				<input type="text" id="ngay_sinh" name="ngay_sinh" required><br><br>
+				<input type="date" id="ngay_sinh" name="ngay_sinh" required><br><br>
 
 				<label for="dia_chi">Địa chỉ:</label>
 				<input type="text" id="dia_chi" name="dia_chi" required><br><br>
@@ -98,5 +112,94 @@
 			</form>
 		</div>
 	</div>
+	<script>
+		// Ham mo modal them moi
+		function openAddModal() {
+			document.getElementById('studentForm').reset(); // Xoa du lieu cu cua form
+			document.getElementById('action_type').value = 'add';
+			document.getElementById('ma_sv').readOnly = false; 
+			document.getElementById('modalTitle').innerText = 'Thêm sinh viên mới';
+			document.getElementById('studentModal').style.display = 'flex';
+		}
+
+		// Ham mo modal de sua
+		function openEditModal(ma_sv){
+			fetch(`ajax_lay_sv.php?ma_sv=${ma_sv}`)
+			.then(response => response.json())
+			.then(res => {
+				if(res.status === 'success'){
+					const data = res.data;
+					document.getElementById('action_type').value = 'edit';
+					document.getElementById('ma_khoa').value = data.ma_khoa;
+					document.getElementById('ma_lop').value = data.ma_lop;
+					document.getElementById('ma_sv').value = data.ma_sv;
+					document.getElementById('ma_sv').readOnly = true;
+					document.getElementById('ho_ten').value = data.ho_ten;
+					document.getElementById('gioi_tinh').value = data.gioi_tinh;
+					document.getElementById('ngay_sinh').value = data.ngay_sinh;
+					document.getElementById('dia_chi').value = data.dia_chi;
+					document.getElementById('email').value = data.email;
+					document.getElementById('sdt').value = data.sdt;
+
+					document.getElementById('modalTitle').innerText = 'Cập nhật sinh viên';
+					document.getElementById('studentModal').style.display = 'flex';
+				}
+				else{
+					alert(res.message);
+				}
+			});
+		}
+
+		// Ham dong modal
+		function closeModal(){
+			document.getElementById('studentModal').style.display = 'none';
+		}
+
+		// Xu ly khi nhan nut Luu tren Form (Them hoac sua)
+		document.getElementById('studentForm').addEventListener('submit', function(e){
+			e.preventDefault(); // Chan khong cho browser reload
+
+			const formData = new FormData(this);
+			const actionType = document.getElementById('action_type').value;
+			const url = actionType === 'add' ? 'ajax_them_sv.php' : 'ajax_sua_sv.php';
+
+			fetch(url, {
+				method: 'POST',
+				body: formData
+			})
+			.then(response => response.text())
+			.then(text => {
+				try{
+					const res = JSON.parse(text);
+					alert(res.message);
+					if(res.status === 'success'){
+						closeModal();
+						location.reload(); // Tai lai trang de cap nhat bang
+					}
+				}catch(err){
+					console.error("Lỗi dữ liệu trả về từ server: ", text);
+					alert("Có lỗi từ máy chủ: " + text);
+				}
+			})
+			.catch(err => {
+				console.error(err);
+				alert("Lỗi kết nối đến máy chủ");
+			});
+		});
+
+		// Ham xoa sinh vien
+		function deleteStudent(ma_sv){
+			if(confirm(`Bạn có chắc chắn muốn xóa sinh viên ${ma_sv} không?`)){
+				fetch(`ajax_xoa_sv.php?ma_sv=${ma_sv}`)
+				.then(response => response.json())
+				.then(res => {
+					alert(res.message);
+					if(res.status === 'success'){
+						location.reload();
+					}
+				});
+			}
+		}
+	</script>
 </body>
 </html>
