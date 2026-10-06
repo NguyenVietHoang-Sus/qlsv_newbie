@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Danh sách sinh viên</title>
-	<link rel="stylesheet" href="../css/modal.css">
-</head>
-<body>
 	<?php
-		require 'connection.php';
+		$page_title = 'Danh sach sinh vien';
+    	$active_menu = 'sinhvien';
+    	require 'includes/header.php';
 		$sql_select = 'SELECT * FROM t_sinhvien';
 		$result = $conn->query($sql_select);
 	?>
-	<center>
 		<h2>Danh sách sinh viên</h2>
 		<button onclick="openAddModal()">Thêm sinh viên mới</button>
 		<table border="1">
+			<tr>
 			<th colspan="1">Hành động</th>
 			<th>STT</th>
 			<th>Mã khoa</th>
@@ -27,6 +20,7 @@
 			<th>Địa chỉ</th>
 			<th>Email</th>
 			<th>Số điện thoại</th>
+			</tr>
 		<?php 
 			if($result->num_rows > 0){
 				$stt = 1;
@@ -52,10 +46,8 @@
 			else{
 				echo "0 results";
 			}
-			$conn->close();
 		?>
 		</table>
-	</center>
 	<div id="studentModal" class="modal" style="display: none;">
 		<div class="modal-content">
 			<button type="button" class="close-btn" onclick="closeModal()">&times;</button>
@@ -201,5 +193,5 @@
 			}
 		}
 	</script>
-</body>
-</html>
+
+<?php  require 'includes/footer.php'; ?>

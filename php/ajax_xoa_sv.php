@@ -2,7 +2,7 @@
 	require 'connection.php';
 	header('Content-Type: application/json');
 
-	$ma_sv = $_GET['ma_sv'];
+	$ma_sv = $_GET['ma_sv'] ?? '';
 	$sql = "DELETE FROM t_sinhvien WHERE ma_sv = '$ma_sv'";
 
 	if($conn->query($sql) === TRUE){
