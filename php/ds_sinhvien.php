@@ -2,14 +2,36 @@
 		$page_title = 'Danh sach sinh vien';
     	$active_menu = 'sinhvien';
     	require 'includes/header.php';
-		$sql_select = 'SELECT * FROM t_sinhvien';
+    	$keyword = trim($_GET['keyword'] ?? '');
+
+    	if($keyword !== ''){
+    		$sql_select = "SELECT * FROM t_sinhvien WHERE ma_sv LIKE '%$keyword%' OR ho_ten LIKE '%$keyword%' ";
+    	}
+		else{
+			$sql_select = "SELECT * FROM t_sinhvien";
+		}
 		$result = $conn->query($sql_select);
 	?>
 		<h2>Danh sách sinh viên</h2>
-		<button onclick="openAddModal()">Thêm sinh viên mới</button>
+		<div class="toolbar">
+			<button class="btn-add" onclick="openAddModal()">+ Thêm sinh viên mới</button>
+
+			<form method="GET" action="ds_sinhvien.php" class="search-form">
+				<input type="text"
+				 	   name="keyword"
+					   class="search-input"
+				 	   placeholder="Nhập mã sinh viên hoặc họ tên..."
+				 	   value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" 
+				>
+				<button type="submit" class="btn-search">Tìm kiếm</button>
+				<?php if(!empty($_GET['keyword'])): ?>
+					<a href="ds_sinhvien.php" class="btn-reset">[Xoá bộ lọc]</a>
+				<?php endif; ?>
+			</form>
+		</div>
 		<table border="1">
 			<tr>
-			<th colspan="1">Hành động</th>
+			<th>Hành động</th>
 			<th>STT</th>
 			<th>Mã khoa</th>
 			<th>Mã lớp</th>
@@ -44,7 +66,16 @@
 				}
 			}
 			else{
-				echo "0 results";
+				echo "<tr>";
+				echo "<td colspan='11' style='text-align: center; padding: 16px; color: #666;'>";
+				if($keyword !== ''){
+					echo "Không tìm thấy sinh viên nào khớp với từ khóa: <b>" . htmlspecialchars($keyword) . "</b>";
+				}
+				else{
+					echo "Chưa có sinh viên nào trong hệ thống.";
+				}
+				echo "</td>";
+				echo "</tr>";
 			}
 		?>
 		</table>
@@ -61,7 +92,7 @@
 					<option value="KT">Kinh tế</option>
 					<option value="NN">Ngoại ngữ</option>
 					<option value="MT">Môi trường</option>
-				</select><br><br>
+				</select>
 
 				<label for="ma_lop">Mã lớp:</label>
 				<select id="ma_lop" name="ma_lop" required>
@@ -72,35 +103,37 @@
 					<option value="KT2">KT2</option>
 					<option value="NN1">NN1</option>
 					<option value="MT1">MT1</option>
-				</select><br><br>
+				</select>
 
 				<label for="ma_sv">Mã sinh viên:</label>
-				<input type="text" id="ma_sv" name="ma_sv" required><br><br>
+				<input type="text" id="ma_sv" name="ma_sv" required>
 
 				<label for="ho_ten">Họ và tên:</label>
-				<input type="text" id="ho_ten" name="ho_ten" required><br><br>
+				<input type="text" id="ho_ten" name="ho_ten" required>
 
 				<label for="gioi_tinh">Giới tính:</label>
 				<select id="gioi_tinh" name="gioi_tinh">
 					<option value="Nam">Nam</option>
 					<option value="Nữ">Nữ</option>
 					<option value="Khác">Khác</option>
-				</select><br><br>
+				</select>
 
 				<label for="ngay_sinh">Ngày sinh:</label>
-				<input type="date" id="ngay_sinh" name="ngay_sinh" required><br><br>
+				<input type="date" id="ngay_sinh" name="ngay_sinh" required>
 
 				<label for="dia_chi">Địa chỉ:</label>
-				<input type="text" id="dia_chi" name="dia_chi" required><br><br>
+				<input type="text" id="dia_chi" name="dia_chi" required>
 
 				<label for="email">Email:</label>
-				<input type="text" id="email" name="email" required><br><br>
+				<input type="text" id="email" name="email" required>
 
 				<label for="sdt">Số điện thoại:</label>
-				<input type="text" id="sdt" name="sdt" required><br><br>
+				<input type="text" id="sdt" name="sdt" required>
 
-				<button type="submit" id="btnSave">Lưu thông tin</button>
-				<button type="button" onclick="closeModal()">Hủy</button>
+				<div class="modal-actions">
+					<button type="button" class="btn-secondary" onclick="closeModal()">Hủy</button>
+					<button type="submit" id="btnSave" class="btn-primary">Lưu thông tin</button>
+				</div>
 			</form>
 		</div>
 	</div>

@@ -12,6 +12,7 @@
 	<title>QLSV</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<link rel="stylesheet" href="../css/modal.css">
+	<link rel="stylesheet" href="../css/table.css">
 </head>
 <body>
 	<?php require __DIR__ . "/sidebar.php"; ?>

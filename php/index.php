@@ -6,4 +6,4 @@
 
 <h1>Quản lý sinh viên</h1>
 
-<?php require 'includes/footer.php' ?>
+<?php require 'includes/footer.php'; ?>

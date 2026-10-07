@@ -1,0 +1,44 @@
+/* CSS cho bảng hiển thị danh sách (Khoa, Lớp, Sinh viên) - Kế thừa từ old_QLSV */
+table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 25px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+table tr:hover {
+  background-color: #ddd;
+}
+
+table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #04AA6D;
+  color: white;
+  font-weight: bold;
+}
+
+/* Nút thao tác Sửa / Xóa trong bảng */
+table td button {
+  padding: 5px 10px;
+  margin-right: 4px;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+table td button:hover {
+  background-color: #e6e6e6;
+}
