@@ -1,29 +1,29 @@
 <?php
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('DB_NAME', 'miniqlsinhvien');
-    define('DB_CHARSET', 'utf8mb4');
+    if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+    if (!defined('DB_USER')) define('DB_USER', 'root');
+    if (!defined('DB_PASS')) define('DB_PASS', '');
+    if (!defined('DB_NAME')) define('DB_NAME', 'miniqlsinhvien');
+    if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
 
     $servername = DB_HOST;
     $username = DB_USER;
     $password = DB_PASS;
     $dbname = DB_NAME;
 
-    // date_default_timezone_set('Asia/Ho_Chi_Minh');
+    if (!function_exists('getDbConnection')) {
+        function getDbConnection(){
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            if($conn->connect_error){
+                die("Connection failed: " . $conn->connect_error);
+            }
 
-    // @return mysqli
+            $conn->set_charset(DB_CHARSET);
 
-    function getDbConnection(){
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if($conn->connect_error){
-            die("Connection failed: " . $conn->connect_error);
+            return $conn;
         }
-
-        $conn->set_charset(DB_CHARSET);
-
-        return $conn;
     }
 
-    $conn = getDbConnection();
+    if (!isset($conn) || !($conn instanceof mysqli)) {
+        $conn = getDbConnection();
+    }
 ?>

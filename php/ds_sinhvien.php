@@ -1,36 +1,54 @@
-	<?php
-		$page_title = 'Danh sach sinh vien';
-    	$active_menu = 'sinhvien';
-    	require 'includes/header.php';
-    	$keyword = trim($_GET['keyword'] ?? '');
+<?php
+	$page_title = 'Danh sách sinh viên';
+	$active_menu = 'sinhvien';
+	require 'includes/header.php';
 
-    	if($keyword !== ''){
-    		$sql_select = "SELECT * FROM t_sinhvien WHERE ma_sv LIKE '%$keyword%' OR ho_ten LIKE '%$keyword%' ";
-    	}
-		else{
-			$sql_select = "SELECT * FROM t_sinhvien";
+	$keyword = trim($_GET['keyword'] ?? '');
+
+	if($keyword !== ''){
+		$keyword_safe = $conn->real_escape_string($keyword);
+		$sql_select = "SELECT * FROM t_sinhvien WHERE ma_sv LIKE '%$keyword_safe%' OR ho_ten LIKE '%$keyword_safe%' ORDER BY ma_sv ASC";
+	}
+	else{
+		$sql_select = "SELECT * FROM t_sinhvien ORDER BY ma_sv ASC";
+	}
+	$result = $conn->query($sql_select);
+
+	// Lấy danh sách Khoa và Lớp động từ cơ sở dữ liệu để đồng bộ hoàn toàn
+	$list_khoa = $conn->query("SELECT ma_khoa, ten_khoa FROM t_khoa ORDER BY ma_khoa ASC");
+	$list_lop = $conn->query("SELECT ma_lop, ten_lop, ma_khoa FROM t_lop ORDER BY ma_lop ASC");
+
+	$classes_array = [];
+	if ($list_lop && $list_lop->num_rows > 0) {
+		while ($l = $list_lop->fetch_assoc()) {
+			$classes_array[] = [
+				'ma_lop' => $l['ma_lop'],
+				'ten_lop' => $l['ten_lop'],
+				'ma_khoa' => $l['ma_khoa']
+			];
 		}
-		$result = $conn->query($sql_select);
-	?>
-		<h2>Danh sách sinh viên</h2>
-		<div class="toolbar">
-			<button class="btn-add" onclick="openAddModal()">+ Thêm sinh viên mới</button>
+	}
+?>
+	<h2>Danh sách sinh viên</h2>
+	<div class="toolbar">
+		<button class="btn-add" onclick="openAddModal()">+ Thêm sinh viên mới</button>
 
-			<form method="GET" action="ds_sinhvien.php" class="search-form">
-				<input type="text"
-				 	   name="keyword"
-					   class="search-input"
-				 	   placeholder="Nhập mã sinh viên hoặc họ tên..."
-				 	   value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" 
-				>
-				<button type="submit" class="btn-search">Tìm kiếm</button>
-				<?php if(!empty($_GET['keyword'])): ?>
-					<a href="ds_sinhvien.php" class="btn-reset">[Xoá bộ lọc]</a>
-				<?php endif; ?>
-			</form>
-		</div>
-		<table border="1">
-			<tr>
+		<form method="GET" action="ds_sinhvien.php" class="search-form">
+			<input type="text"
+				   name="keyword"
+				   class="search-input"
+				   placeholder="Nhập mã sinh viên hoặc họ tên..."
+				   value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" 
+			>
+			<button type="submit" class="btn-search">Tìm kiếm</button>
+			<?php if(!empty($_GET['keyword'])): ?>
+				<a href="ds_sinhvien.php" class="btn-reset">[Xoá bộ lọc]</a>
+			<?php endif; ?>
+		</form>
+	</div>
+
+	<table>
+		<tr>
 			<th>Hành động</th>
 			<th>STT</th>
 			<th>Mã khoa</th>
@@ -42,43 +60,45 @@
 			<th>Địa chỉ</th>
 			<th>Email</th>
 			<th>Số điện thoại</th>
-			</tr>
-		<?php 
-			if($result->num_rows > 0){
-				$stt = 1;
-				while($row = $result->fetch_assoc()){
-					echo "<tr>";
-					echo "<td> 
-						<button onclick=\"openEditModal('" . $row['ma_sv'] . "')\">Sửa</button>
-						<button onclick=\"deleteStudent('" . $row['ma_sv'] . "')\">Xóa</button>
-					</td>";
-					echo "<td>" . $stt++ . "</td>";
-					echo "<td>" . $row["ma_khoa"] . "</td>";
-					echo "<td>" . $row["ma_lop"] . "</td>";
-					echo "<td>" . $row["ma_sv"] . "</td>";
-					echo "<td>" . $row["ho_ten"] . "</td>";
-					echo "<td>" . $row["gioi_tinh"] . "</td>";
-					echo "<td>" . $row["ngay_sinh"] . "</td>";
-					echo "<td>" . $row["dia_chi"] . "</td>";
-					echo "<td>" . $row["email"] . "</td>";
-					echo "<td>" . $row["sdt"] . "</td>";
-					echo "</tr>";
-				}
-			}
-			else{
+		</tr>
+	<?php 
+		if($result && $result->num_rows > 0){
+			$stt = 1;
+			while($row = $result->fetch_assoc()){
 				echo "<tr>";
-				echo "<td colspan='11' style='text-align: center; padding: 16px; color: #666;'>";
-				if($keyword !== ''){
-					echo "Không tìm thấy sinh viên nào khớp với từ khóa: <b>" . htmlspecialchars($keyword) . "</b>";
-				}
-				else{
-					echo "Chưa có sinh viên nào trong hệ thống.";
-				}
-				echo "</td>";
+				echo "<td> 
+					<button onclick=\"openEditModal('" . htmlspecialchars($row['ma_sv']) . "')\">Sửa</button>
+					<button onclick=\"deleteStudent('" . htmlspecialchars($row['ma_sv']) . "')\">Xóa</button>
+				</td>";
+				echo "<td>" . $stt++ . "</td>";
+				echo "<td>" . htmlspecialchars($row["ma_khoa"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["ma_lop"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["ma_sv"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["ho_ten"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["gioi_tinh"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["ngay_sinh"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["dia_chi"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["email"]) . "</td>";
+				echo "<td>" . htmlspecialchars($row["sdt"]) . "</td>";
 				echo "</tr>";
 			}
-		?>
-		</table>
+		}
+		else{
+			echo "<tr>";
+			echo "<td colspan='11' style='text-align: center; padding: 16px; color: #666;'>";
+			if($keyword !== ''){
+				echo "Không tìm thấy sinh viên nào khớp với từ khóa: <b>" . htmlspecialchars($keyword) . "</b>";
+			}
+			else{
+				echo "Chưa có sinh viên nào trong hệ thống.";
+			}
+			echo "</td>";
+			echo "</tr>";
+		}
+	?>
+	</table>
+
+	<!-- Modal thêm / sửa sinh viên -->
 	<div id="studentModal" class="modal" style="display: none;">
 		<div class="modal-content">
 			<button type="button" class="close-btn" onclick="closeModal()">&times;</button>
@@ -87,22 +107,22 @@
 				<input type="hidden" id="action_type" name="action_type" value="add">
 
 				<label for="ma_khoa">Mã khoa:</label>
-				<select id="ma_khoa" name="ma_khoa" required>
-					<option value="CNTT">Công nghệ thông tin</option>
-					<option value="KT">Kinh tế</option>
-					<option value="NN">Ngoại ngữ</option>
-					<option value="MT">Môi trường</option>
+				<select id="ma_khoa" name="ma_khoa" onchange="updateLopDropdown()" required>
+					<option value="">-- Chọn khoa --</option>
+					<?php 
+						if ($list_khoa && $list_khoa->num_rows > 0) {
+							while ($k = $list_khoa->fetch_assoc()) {
+								echo "<option value='" . htmlspecialchars($k['ma_khoa']) . "'>";
+								echo htmlspecialchars($k['ma_khoa']) . " - " . htmlspecialchars($k['ten_khoa']);
+								echo "</option>";
+							}
+						}
+					?>
 				</select>
 
 				<label for="ma_lop">Mã lớp:</label>
 				<select id="ma_lop" name="ma_lop" required>
-					<option value="C1">C1</option>
-					<option value="C2">C2</option>
-					<option value="C3">C3</option>
-					<option value="KT1">KT1</option>
-					<option value="KT2">KT2</option>
-					<option value="NN1">NN1</option>
-					<option value="MT1">MT1</option>
+					<option value="">-- Chọn khoa trước để hiện danh sách lớp --</option>
 				</select>
 
 				<label for="ma_sv">Mã sinh viên:</label>
@@ -137,26 +157,60 @@
 			</form>
 		</div>
 	</div>
+
 	<script>
-		// Ham mo modal them moi
+		// Toàn bộ danh sách lớp lấy động từ database
+		const allClasses = <?= json_encode($classes_array) ?>;
+
+		// Hàm tự động lọc danh sách lớp theo Khoa đã chọn
+		function updateLopDropdown(selectedLop = '') {
+			const selectedKhoa = document.getElementById('ma_khoa').value;
+			const lopSelect = document.getElementById('ma_lop');
+			lopSelect.innerHTML = '<option value="">-- Chọn lớp --</option>';
+
+			const filtered = selectedKhoa 
+				? allClasses.filter(item => item.ma_khoa === selectedKhoa)
+				: allClasses;
+
+			if (filtered.length === 0 && selectedKhoa !== '') {
+				lopSelect.innerHTML = '<option value="">(Khoa này chưa có lớp học nào)</option>';
+				return;
+			}
+
+			filtered.forEach(item => {
+				const opt = document.createElement('option');
+				opt.value = item.ma_lop;
+				opt.textContent = `${item.ma_lop} - ${item.ten_lop}`;
+				if (item.ma_lop === selectedLop) {
+					opt.selected = true;
+				}
+				lopSelect.appendChild(opt);
+			});
+		}
+
+		// Hàm mở modal thêm mới
 		function openAddModal() {
-			document.getElementById('studentForm').reset(); // Xoa du lieu cu cua form
+			document.getElementById('studentForm').reset();
 			document.getElementById('action_type').value = 'add';
 			document.getElementById('ma_sv').readOnly = false; 
 			document.getElementById('modalTitle').innerText = 'Thêm sinh viên mới';
+			updateLopDropdown();
 			document.getElementById('studentModal').style.display = 'flex';
 		}
 
-		// Ham mo modal de sua
+		// Hàm mở modal để sửa
 		function openEditModal(ma_sv){
-			fetch(`ajax_lay_sv.php?ma_sv=${ma_sv}`)
+			fetch(`ajax_lay_sv.php?ma_sv=${encodeURIComponent(ma_sv)}`)
 			.then(response => response.json())
 			.then(res => {
 				if(res.status === 'success'){
 					const data = res.data;
 					document.getElementById('action_type').value = 'edit';
 					document.getElementById('ma_khoa').value = data.ma_khoa;
-					document.getElementById('ma_lop').value = data.ma_lop;
+					
+					// Đồng bộ danh sách lớp của khoa đó và chọn đúng lớp của sinh viên
+					updateLopDropdown(data.ma_lop);
+
 					document.getElementById('ma_sv').value = data.ma_sv;
 					document.getElementById('ma_sv').readOnly = true;
 					document.getElementById('ho_ten').value = data.ho_ten;
@@ -172,17 +226,21 @@
 				else{
 					alert(res.message);
 				}
+			})
+			.catch(err => {
+				console.error(err);
+				alert("Lỗi kết nối khi lấy thông tin sinh viên");
 			});
 		}
 
-		// Ham dong modal
+		// Hàm đóng modal
 		function closeModal(){
 			document.getElementById('studentModal').style.display = 'none';
 		}
 
-		// Xu ly khi nhan nut Luu tren Form (Them hoac sua)
+		// Xử lý khi nhấn nút Lưu trên Form (Thêm hoặc sửa)
 		document.getElementById('studentForm').addEventListener('submit', function(e){
-			e.preventDefault(); // Chan khong cho browser reload
+			e.preventDefault();
 
 			const formData = new FormData(this);
 			const actionType = document.getElementById('action_type').value;
@@ -199,7 +257,7 @@
 					alert(res.message);
 					if(res.status === 'success'){
 						closeModal();
-						location.reload(); // Tai lai trang de cap nhat bang
+						location.reload();
 					}
 				}catch(err){
 					console.error("Lỗi dữ liệu trả về từ server: ", text);
@@ -212,19 +270,23 @@
 			});
 		});
 
-		// Ham xoa sinh vien
+		// Hàm xóa sinh viên
 		function deleteStudent(ma_sv){
 			if(confirm(`Bạn có chắc chắn muốn xóa sinh viên ${ma_sv} không?`)){
-				fetch(`ajax_xoa_sv.php?ma_sv=${ma_sv}`)
+				fetch(`ajax_xoa_sv.php?ma_sv=${encodeURIComponent(ma_sv)}`)
 				.then(response => response.json())
 				.then(res => {
 					alert(res.message);
 					if(res.status === 'success'){
 						location.reload();
 					}
+				})
+				.catch(err => {
+					console.error(err);
+					alert("Lỗi kết nối khi xóa sinh viên");
 				});
 			}
 		}
 	</script>
 
-<?php  require 'includes/footer.php'; ?>
+<?php require 'includes/footer.php'; ?>
